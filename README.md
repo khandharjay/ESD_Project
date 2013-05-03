@@ -8,6 +8,8 @@ The project makes use of the HiPi Library.
 
 
 Accelerometer---https://www.sparkfun.com/products/10955
+
+
 Gyroscope-------http://www.pololu.com/catalog/product/2125
 
 
