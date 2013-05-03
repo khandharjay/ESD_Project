@@ -1,4 +1,4 @@
-ESD_Project
+Raspberry Pi Motion Tracker
 ===========
 Interfacing a Accelerometer and a Gyroscope with the Raspberry Pi.
 
