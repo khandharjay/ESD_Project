@@ -53,11 +53,17 @@ Steps to use this code:-
    NOTE: You should have gnuplot installed on your system. This can be done by typing the following commands
    
    a. sudo apt-get install gnuplot
+   
    b. sudo apt-get install libwxgtk2.8-dev
+   
    c. sudo apt-get libwxgtk2.8-dev
+   
    d. sudo apt-get libreadline5-dev
+   
    e. sudo apt-get libx11-dev
+   
    f. sudo apt-get libxt-dev
+   
    
    
    This can also be done in a single command
