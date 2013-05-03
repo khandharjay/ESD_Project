@@ -1,12 +1,17 @@
-/**/
+
 
 #!/usr/bin/perl
+
+
+# Code that conputes the current orientation of the board with respect to horizontal.
+
 
 use warnings;
 
 use strict;
 
-#use Chart::Gnuplot;
+#We make use of the HiPi BCM2835 I2C library, which is able to generate a repeated start signal, which is required by the accelerometer.
+
 
 use HiPi::BCM2835::I2C;
 
@@ -15,17 +20,21 @@ use HiPi::BCM2835::I2C;
 #used internally
 use HiPi::BCM2835;
 
-#export some constants
+#export some constants from 
 use HiPi::BCM2835::I2C  qw( :i2c );
 
 use HiPi::Utils;
 
+
+#Import the library that has functions for delay.
 use Time::HiRes qw(usleep  ualarm gettimeofday tv_interval);
 
 use Time::HiRes qw(time);
 
 use Time::HiRes qw(sleep);
 
+
+#Variables used to compute the loop time.
 my $cur_sec=0;
 my $cur_msec=0;
 my $prev_sec=0;
@@ -34,10 +43,11 @@ my $temp_sec=0;
 my $temp_msec=0;
 my $count=0;
 
+#Call the init() from the library.
 HiPi::BCM2835->bcm2835_init();
 
 
-#Open the device and get a device handler
+#Open the device and get a device handler, that can be used to perform further transactions on the bus.
 # 0x1D is the accelerometer addess
 my $dev = HiPi::BCM2835::I2C->new( address => 0x1D );
 
@@ -99,7 +109,7 @@ print qq(The value read from the Control register after the device is in standby
 
 my $xyz_data_cfg=0x0E;
 
-#Write 0x00 to the xyz_cfg_register,GSCALE of 2
+#Write 0x00 to the xyz_cfg_register,GSCALE of 2, which means the accelerometer readings are in the range of +2G to -2G
 
 $dev->i2c_write($xyz_data_cfg,0x00);
 
@@ -142,6 +152,8 @@ print qq(The register who am i at location $who_am_i_gyro is $value\n);
 
 
 #Start initializing the Gyro Registers
+
+#Enable the X,Y,Z axis of the gyro and bring it into active mode.
 my $ctrl_reg_1_gyro=0x20;
 
 my $ctrl_r1_gyro_val=0x0F;
@@ -149,6 +161,7 @@ my $ctrl_r1_gyro_val=0x0F;
 $dev2->i2c_write($ctrl_reg_1_gyro,$ctrl_r1_gyro_val);
 
 
+#Disbaling the High Pass filter mode selection set to OFF.
 my $ctrl_reg_2_gyro=0x21;
 
 my $ctrl_r2_gyro_val=0x00;
@@ -156,6 +169,8 @@ my $ctrl_r2_gyro_val=0x00;
 $dev2->i2c_write($ctrl_reg_2_gyro,$ctrl_r2_gyro_val);
 
 
+
+#Enabling the DRDY pin of the gyro.
 my $ctrl_reg_3_gyro=0x22;
 
 my $ctrl_r3_gyro_val=0x08;
@@ -163,6 +178,8 @@ my $ctrl_r3_gyro_val=0x08;
 $dev2->i2c_write($ctrl_reg_3_gyro,$ctrl_r3_gyro_val);
 
 
+
+#Set the Full Scale to 250 degrees per second, litte endian memory.
 my $ctrl_reg_4_gyro=0x23;
 
 my $ctrl_r4_gyro_val=0x00;
@@ -170,6 +187,7 @@ my $ctrl_r4_gyro_val=0x00;
 $dev2->i2c_write($ctrl_reg_4_gyro,$ctrl_r4_gyro_val);
 
 
+#Disable High Pass Filter and the FIFO
 my $ctrl_reg_5_gyro=0x24;
 
 my $ctrl_r5_gyro_val=0x00;
@@ -177,7 +195,7 @@ my $ctrl_r5_gyro_val=0x00;
 $dev2->i2c_write($ctrl_reg_5_gyro,$ctrl_r5_gyro_val);
 
 
-#Delay 0f 5ms required for the gyro
+#Delay 0f 5ms required for the gyro to write the values to its internal registers
 usleep(5000);
 
 
@@ -215,23 +233,20 @@ my $x_final_gyro=0x00;
 
 my $gyro_backup=0;
 
-#print "Hello World!\n";
-#my $path_write= "./from_Perl";
 
-    #First Perl opens its write pipe
- #   unless (-p $path_write)
- #   { system("mkfifo -m 0666 $path_write"); }
-
+#Get the time before starting to read the values.
 ($prev_sec,$prev_msec)=gettimeofday;
 my $overall_angle=0;
 my $loop_time=0;
 open (MYFILE,'>angle_data.txt');
 my $result_string="";
 my $loop_count=1000;
+
+#Loop 1000 times and sample the accelerometer and the gyro values.
+
     while($loop_count>0)
     {
-    #open(FIFO1, "> $path_write")|| die "Perl::Failed to open write pipe $! \n";
-    #print qq(Perl::Write Pipe Created and Opened\n);
+    
     $loop_count--;
 
     #Read the Accelerometer values
@@ -243,9 +258,7 @@ my $loop_count=1000;
 
      $y_final= $y_final>>4;
     	
-     #my $result1=sprintf("%05d",$y_final);    
-     #print qq(The acc value is $y_final\n);
-     #print FIFO1 $result1;
+    
     
      #Get the timestamp
      ($cur_sec,$cur_msec)=gettimeofday;
@@ -260,17 +273,11 @@ my $loop_count=1000;
      $loop_time=$temp_sec;
      $loop_time=$loop_time /1000000;
 
-    # $temp_msec=$temp_sec%1000000;
-     
-    # $temp_sec=int($temp_sec/1000000);
-
-    # $loop_time=$temp_msec+ $temp_sec;
+   #Get the elapsed time between the previous and current sample.
 
      $prev_sec=$cur_sec;
      $prev_msec=$cur_msec;
-     #$result1=sprintf("%01d%04d",$temp_sec,$temp_msec);
-      	
-     #print FIFO1 $result1;
+     
 
 
      #Read the Gyroscope  values
@@ -289,17 +296,29 @@ my $loop_count=1000;
 	{	
 		$gyro_backup=$x_final_gyro;
 	}
-      #$result1=sprintf("%05d",$x_final_gyro);   
-      #print qq(The gyro value is $x_final_gyro\n); 
-      #print FIFO1 $result1;
+     
       $count++;
-      #sleep(1);   
-      #close FIFO1;
+     
+     
+     
+     #Get the gyro values in degrees per second.
       $x_final_gyro = $x_final_gyro * 8.75/1000;
 	
+     #Get the Accelerometer values in terms of G.
       $y_final= $y_final * 2.0/2048.0;
        
+     # Use the complementary filter equation to get the angle.
+     # The gyro value is the angular velocity, but we need the angle,so we integrate the angular velocity over time.
+     # The angle value that is obtained now is passed through the high pass filter.
+     
+     
+     #The problem with the accelerometer values is that, it does give the current orientation,but it also gives the value of the linear acceleration.
+     #But we only require the current orientation values from the accelerometer, so we pass its values through a low pass filter.
+     
+     
+     
       $overall_angle= (0.98 * ($overall_angle + $x_final_gyro * $loop_time)) + (0.02 * $y_final * 57.29);
+      
       
       print qq(Gyro:: $x_final_gyro  Acc::$y_final  Loop Time:: $loop_time\n);
 
@@ -307,8 +326,12 @@ my $loop_count=1000;
       print qq(   \n);
       
       $result_string=sprintf("%d %lf\n",$count,$overall_angle);
+      
+      # Write all the angle values to a text file, which will be used to print a graph using GNU plot.
       print MYFILE $result_string;
 
+
+      #Just to make sure the loop time stays constant at 20 ms.
       if( $loop_time < 0.02)
 	{
 	    usleep(100);
