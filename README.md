@@ -23,8 +23,11 @@ NOTE: This Library is written for I2C devices that need a repeated start signal.
 Steps to use this code:-
 
 1. Install the HiPi Library. Run the folowing commands in the same order
+
    a. sudo apt-get upgrade
+
    b. wget http://raspberry.znix.com/hipifiles/hipi-install   
+   
    c. perl hipi-install
   
     This will install Hi-Pi Library on your Raspberry Pi.
