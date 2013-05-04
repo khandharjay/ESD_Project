@@ -66,9 +66,6 @@ Steps to use this code:-
    
    
    
-   This can also be done in a single command
-   
-   sudo apt-get install libwxgtk2.8-dev libpango1.0-dev libreadline5-dev libx11-dev libxt-dev texinfo libgd2-xpm-dev
    
    
 
